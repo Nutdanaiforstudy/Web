@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Andes Glass UI (3 Glass Modes)</title>
+  <title>Full Page Glass Modes + Standout Switch</title>
+
   <style>
     :root{
       --r-outer: 44px;
@@ -12,7 +13,13 @@
       --text: rgba(255,255,255,.94);
       --muted: rgba(255,255,255,.72);
 
-      /* Default (will be overridden by mode classes) */
+      /* Defaults (overridden per mode) */
+      --page-overlay-1: rgba(255,255,255,.08);
+      --page-overlay-2: rgba(0,0,0,.18);
+      --page-blur: 0px;
+      --page-sat: 110%;
+      --page-contrast: 1.05;
+
       --glass-bg: rgba(255,255,255,.14);
       --glass-stroke: rgba(255,255,255,.28);
       --glass-blur: 14px;
@@ -27,48 +34,60 @@
       --panel-stroke: rgba(255,255,255,.22);
       --panel-blur: 16px;
 
-      --cta-bg: rgba(0,0,0,.70);
+      --cta-bg: rgba(0,0,0,.72);
       --cta-stroke: rgba(255,255,255,.10);
+
+      /* Switch button */
+      --switch-bg: rgba(0,0,0,.65);
+      --switch-stroke: rgba(255,255,255,.22);
+      --switch-glow: 0 10px 30px rgba(0,0,0,.45);
+      --switch-blur: 14px;
     }
 
-    *{box-sizing:border-box}
+    *{ box-sizing:border-box; }
     body{
       margin:0;
       min-height:100svh;
       display:grid;
       place-items:center;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color:var(--text);
+      color: var(--text);
       overflow:hidden;
       background:#0b0f18;
     }
 
-    /* Background (similar vibe to your screenshot) */
+    /* Base background image */
     .bg{
       position:fixed; inset:0;
       background:
-        radial-gradient(900px 540px at 20% 12%, rgba(255,255,255,.18), transparent 60%),
-        radial-gradient(780px 520px at 86% 58%, rgba(255,180,255,.14), transparent 60%),
-        url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=2000&q=80");
-      background-size:cover;
-      background-position:center;
+        url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=2200&q=80");
+      background-size: cover;
+      background-position: center;
       transform: scale(1.03);
-      filter: saturate(1.05) contrast(1.05);
     }
-    .bg::after{
-      content:"";
-      position:absolute; inset:-70px;
-      background:
-        conic-gradient(from 180deg at 30% 18%,
-          rgba(255,255,255,.20),
-          rgba(255,255,255,0) 28%,
-          rgba(255,255,255,.22) 55%,
-          rgba(255,255,255,0) 78%,
-          rgba(255,255,255,.18));
-      filter: blur(22px);
-      opacity:.6;
-      mix-blend-mode: screen;
+
+    /* This overlay + filter layer CHANGES WITH MODE (whole page appearance) */
+    .pageFX{
+      position:fixed; inset:0;
       pointer-events:none;
+      backdrop-filter: blur(var(--page-blur)) saturate(var(--page-sat)) contrast(var(--page-contrast));
+      -webkit-backdrop-filter: blur(var(--page-blur)) saturate(var(--page-sat)) contrast(var(--page-contrast));
+    }
+    .pageFX::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(900px 540px at 20% 12%, var(--page-overlay-1), transparent 60%),
+        radial-gradient(780px 520px at 86% 58%, var(--page-overlay-2), transparent 62%),
+        conic-gradient(from 180deg at 30% 18%,
+          rgba(255,255,255,.14),
+          rgba(255,255,255,0) 30%,
+          rgba(255,255,255,.12) 55%,
+          rgba(255,255,255,0) 78%,
+          rgba(255,255,255,.10));
+      mix-blend-mode: screen;
+      opacity:.85;
+      filter: blur(10px);
     }
 
     /* Phone shell */
@@ -83,36 +102,75 @@
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       position:relative;
+      z-index: 2;
     }
 
-    /* Mode switch button */
-    .mode-btn{
-      position:absolute;
-      top: 14px;
+    /* Standout switch bar (always visible, very clickable) */
+    .switchBar{
+      position:fixed;
       left: 50%;
+      top: 18px;
       transform: translateX(-50%);
-      z-index: 50;
+      z-index: 999;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: var(--switch-bg);
+      border: 1px solid var(--switch-stroke);
+      box-shadow: var(--switch-glow), 0 0 0 6px rgba(255,255,255,.08);
+      backdrop-filter: blur(var(--switch-blur));
+      -webkit-backdrop-filter: blur(var(--switch-blur));
+      pointer-events:auto;
+    }
+
+    .switchPill{
       display:flex;
       align-items:center;
       gap:10px;
       padding: 10px 14px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.22);
-      background: rgba(0,0,0,.35);
-      color: rgba(255,255,255,.92);
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.18);
       cursor:pointer;
       user-select:none;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
       transition: transform .15s ease, background .15s ease;
+      min-height: 42px;
     }
-    .mode-btn:hover{ transform: translateX(-50%) translateY(-1px); background: rgba(0,0,0,.42); }
-    .mode-dot{
-      width:10px; height:10px; border-radius: 99px;
-      background: rgba(255,255,255,.85);
-      box-shadow: 0 0 0 3px rgba(255,255,255,.12);
+    .switchPill:hover{ transform: translateY(-1px); background: rgba(255,255,255,.14); }
+    .switchPill:active{ transform: translateY(0px); }
+
+    .badge{
+      width: 26px; height: 26px;
+      border-radius: 10px;
+      display:grid; place-items:center;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.20);
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
     }
-    .mode-label{ font-size: 13px; font-weight: 700; letter-spacing:.2px; }
+    .badge svg{
+      width: 16px; height: 16px;
+      stroke: rgba(255,255,255,.95);
+      fill:none; stroke-width: 2.2;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .switchText{
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+    }
+    .switchText .t1{ font-size: 12px; opacity:.85; font-weight: 700; letter-spacing:.2px; }
+    .switchText .t2{ font-size: 13px; font-weight: 900; letter-spacing:.2px; }
+
+    .hint{
+      font-size: 12px;
+      opacity: .75;
+      padding: 0 6px 0 2px;
+      font-weight: 700;
+      letter-spacing:.2px;
+      white-space: nowrap;
+    }
 
     /* Main glass card */
     .card{
@@ -128,9 +186,16 @@
       transition: background .35s ease, border-color .35s ease, box-shadow .35s ease, backdrop-filter .35s ease;
     }
 
-    /* 3 GLASS MODES (apply to .shell as class) */
+    /* ============ 3 MODES (change FULL PAGE + UI) ============ */
+
+    /* 1) CLEAR GLASS: crisp page, no page blur */
     .mode-clear{
-      /* Clear glass = minimal blur, very transparent */
+      --page-overlay-1: rgba(255,255,255,.06);
+      --page-overlay-2: rgba(0,0,0,.22);
+      --page-blur: 0px;
+      --page-sat: 105%;
+      --page-contrast: 1.05;
+
       --glass-bg: rgba(255,255,255,.12);
       --glass-stroke: rgba(255,255,255,.22);
       --glass-blur: 0px;
@@ -144,29 +209,51 @@
       --panel-bg: rgba(255,255,255,.10);
       --panel-stroke: rgba(255,255,255,.18);
       --panel-blur: 0px;
+
+      --switch-bg: rgba(0,0,0,.72);
+      --switch-stroke: rgba(255,255,255,.22);
+      --switch-glow: 0 14px 34px rgba(0,0,0,.55);
+      --switch-blur: 10px;
     }
 
+    /* 2) FROZEN GLASS: heavy frost, colder page */
     .mode-frozen{
-      /* Frozen glass = heavy blur, whiter frost */
-      --glass-bg: rgba(255,255,255,.32);
-      --glass-stroke: rgba(255,255,255,.38);
-      --glass-blur: 26px;
-      --glass-sat: 180%;
-      --glass-shadow:
-        inset 0 0 40px rgba(255,255,255,.35),
-        0 18px 55px rgba(0,0,0,.38);
+      --page-overlay-1: rgba(200,235,255,.24);
+      --page-overlay-2: rgba(90,180,255,.14);
+      --page-blur: 22px;
+      --page-sat: 120%;
+      --page-contrast: 1.00;
 
-      --chip-bg: rgba(255,255,255,.16);
-      --chip-stroke: rgba(255,255,255,.34);
+      --glass-bg: rgba(255,255,255,.34);
+      --glass-stroke: rgba(255,255,255,.42);
+      --glass-blur: 28px;
+      --glass-sat: 185%;
+      --glass-shadow:
+        inset 0 0 44px rgba(255,255,255,.38),
+        0 20px 62px rgba(0,0,0,.40);
+
+      --chip-bg: rgba(255,255,255,.18);
+      --chip-stroke: rgba(255,255,255,.36);
       --chip-blur: 18px;
 
       --panel-bg: rgba(255,255,255,.22);
-      --panel-stroke: rgba(255,255,255,.34);
+      --panel-stroke: rgba(255,255,255,.36);
       --panel-blur: 22px;
+
+      --switch-bg: rgba(10,18,32,.70);
+      --switch-stroke: rgba(255,255,255,.30);
+      --switch-glow: 0 14px 36px rgba(0,0,0,.55);
+      --switch-blur: 18px;
     }
 
+    /* 3) CLEAR + BACKGROUND BLUR: modern blur, punchier page */
     .mode-blur{
-      /* Clear glass + background blur = light blur, more contrast */
+      --page-overlay-1: rgba(255,255,255,.14);
+      --page-overlay-2: rgba(255,140,220,.14);
+      --page-blur: 12px;
+      --page-sat: 135%;
+      --page-contrast: 1.08;
+
       --glass-bg: rgba(255,255,255,.16);
       --glass-stroke: rgba(255,255,255,.30);
       --glass-blur: 14px;
@@ -180,6 +267,11 @@
       --panel-bg: rgba(255,255,255,.12);
       --panel-stroke: rgba(255,255,255,.22);
       --panel-blur: 18px;
+
+      --switch-bg: rgba(0,0,0,.65);
+      --switch-stroke: rgba(255,255,255,.26);
+      --switch-glow: 0 16px 44px rgba(0,0,0,.60);
+      --switch-blur: 16px;
     }
 
     /* Top image area */
@@ -202,7 +294,6 @@
       align-items:center;
       z-index:3;
     }
-
     .icon-btn{
       width:46px; height:46px;
       border-radius: 999px;
@@ -233,7 +324,7 @@
       display:flex;
       justify-content:space-between;
       gap: 14px;
-      padding: 16px 16px;
+      padding: 16px;
       border-radius: 18px;
       background: rgba(0,0,0,.38);
       border: 1px solid rgba(255,255,255,.16);
@@ -255,7 +346,7 @@
       color: var(--muted);
       font-size: 14px;
     }
-    .meta svg{ width:16px; height:16px; stroke: var(--muted); }
+    .meta svg{ width:16px; height:16px; stroke: var(--muted); fill:none; stroke-width:2; }
 
     .price{
       text-align:right;
@@ -269,7 +360,7 @@
     }
     .price .value{
       font-size: 34px;
-      font-weight: 800;
+      font-weight: 900;
       letter-spacing: .5px;
     }
     .price .value span{
@@ -288,7 +379,6 @@
       gap: 14px;
     }
 
-    /* Tabs (pill) */
     .tabs{
       display:flex;
       gap: 12px;
@@ -300,7 +390,7 @@
       border: 1px solid rgba(255,255,255,.18);
       background: rgba(255,255,255,.10);
       color: rgba(255,255,255,.85);
-      font-weight: 700;
+      font-weight: 800;
       font-size: 14px;
       letter-spacing:.2px;
       cursor:pointer;
@@ -312,7 +402,6 @@
       border-color: rgba(255,255,255,.30);
     }
 
-    /* Info chips row (matches screenshot vibe) */
     .chips{
       display:flex;
       gap: 12px;
@@ -330,8 +419,8 @@
       border: 1px solid var(--chip-stroke);
       backdrop-filter: blur(var(--chip-blur));
       -webkit-backdrop-filter: blur(var(--chip-blur));
-      color: rgba(255,255,255,.86);
-      font-weight: 700;
+      color: rgba(255,255,255,.88);
+      font-weight: 800;
       font-size: 13px;
       transition: background .35s ease, border-color .35s ease, backdrop-filter .35s ease;
     }
@@ -344,7 +433,6 @@
     }
     .chip svg{ width:18px; height:18px; stroke: rgba(255,255,255,.92); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 
-    /* Description panel */
     .desc{
       padding: 16px;
       border-radius: 22px;
@@ -360,7 +448,6 @@
       transition: background .35s ease, border-color .35s ease, backdrop-filter .35s ease;
     }
 
-    /* CTA */
     .footer{ display:flex; align-items:center; gap: 12px; }
     .book{
       flex:1;
@@ -369,7 +456,7 @@
       border: 1px solid var(--cta-stroke);
       background: var(--cta-bg);
       color: rgba(255,255,255,.95);
-      font-weight: 800;
+      font-weight: 900;
       font-size: 16px;
       letter-spacing: .2px;
       display:flex;
@@ -381,10 +468,9 @@
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
     }
-    .book:hover{ transform: translateY(-1px); background: rgba(0,0,0,.76); }
+    .book:hover{ transform: translateY(-1px); background: rgba(0,0,0,.78); }
     .book svg{ width:18px; height:18px; stroke: rgba(255,255,255,.92); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 
-    /* Scrollbar */
     .desc::-webkit-scrollbar{ width: 10px; }
     .desc::-webkit-scrollbar-thumb{
       background: rgba(255,255,255,.18);
@@ -395,16 +481,35 @@
   </style>
 </head>
 
-<body>
+<body class="mode-blur" id="page">
   <div class="bg" aria-hidden="true"></div>
+  <div class="pageFX" aria-hidden="true"></div>
 
-  <!-- Start in blur mode -->
-  <main id="shell" class="shell mode-blur">
-    <button id="modeBtn" class="mode-btn" type="button" aria-label="Switch glass style">
-      <span class="mode-dot" aria-hidden="true"></span>
-      <span id="modeText" class="mode-label">Glass: Clear + Blur</span>
+  <!-- Standout switch control (fixed on top of the page) -->
+  <div class="switchBar" role="group" aria-label="Glass mode switch">
+    <div class="hint">Tap to switch</div>
+    <button id="switchBtn" class="switchPill" type="button">
+      <span class="badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3v2"/>
+          <path d="M12 19v2"/>
+          <path d="M4.2 6.2l1.4 1.4"/>
+          <path d="M18.4 17.4l1.4 1.4"/>
+          <path d="M3 12h2"/>
+          <path d="M19 12h2"/>
+          <path d="M6.2 19.8l1.4-1.4"/>
+          <path d="M17.4 5.6l1.4-1.4"/>
+          <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>
+        </svg>
+      </span>
+      <span class="switchText">
+        <span class="t1">Glass Mode</span>
+        <span class="t2" id="modeText">Clear + Blur</span>
+      </span>
     </button>
+  </div>
 
+  <main class="shell">
     <section class="card">
       <div class="hero">
         <div class="topbar">
@@ -496,23 +601,37 @@
   </main>
 
   <script>
-    const shell = document.getElementById("shell");
-    const modeBtn = document.getElementById("modeBtn");
+    const page = document.getElementById("page");
+    const switchBtn = document.getElementById("switchBtn");
     const modeText = document.getElementById("modeText");
 
     const modes = [
-      { cls: "mode-clear",  label: "Glass: Clear" },
-      { cls: "mode-frozen", label: "Glass: Frozen" },
-      { cls: "mode-blur",   label: "Glass: Clear + Blur" }
+      { cls: "mode-clear",  label: "Clear" },
+      { cls: "mode-frozen", label: "Frozen" },
+      { cls: "mode-blur",   label: "Clear + Blur" }
     ];
 
-    let i = 2; // start at blur mode
+    // Start on blur mode
+    let i = 2;
 
-    modeBtn.addEventListener("click", () => {
-      shell.classList.remove(modes[i].cls);
-      i = (i + 1) % modes.length;
-      shell.classList.add(modes[i].cls);
+    function applyMode(nextIndex){
+      page.classList.remove(modes[i].cls);
+      i = nextIndex;
+      page.classList.add(modes[i].cls);
       modeText.textContent = modes[i].label;
+    }
+
+    switchBtn.addEventListener("click", () => {
+      const next = (i + 1) % modes.length;
+      applyMode(next);
+    });
+
+    // Optional: press "M" key to switch mode (nice for desktop demo)
+    window.addEventListener("keydown", (e) => {
+      if (e.key.toLowerCase() === "m") {
+        const next = (i + 1) % modes.length;
+        applyMode(next);
+      }
     });
   </script>
 </body>
