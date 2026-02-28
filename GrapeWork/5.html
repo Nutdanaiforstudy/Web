@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Glass Modes (Change Screen Only)</title>
+
+  <style>
+    :root{
+      --r-outer: 44px;
+      --r-inner: 34px;
+
+      --text: rgba(255,255,255,.94);
+      --muted: rgba(255,255,255,.72);
+
+      /* SCREEN (the UI) tokens — these will change by mode */
+      --screen-bg: rgba(255,255,255,.10);
+      --screen-stroke: rgba(255,255,255,.25);
+      --screen-blur: 16px;
+      --screen-sat: 140%;
+      --screen-shadow: 0 22px 70px rgba(0,0,0,.45);
+
+      --tabs-bg: rgba(255,255,255,.14);
+      --tabs-stroke: rgba(255,255,255,.22);
+
+      --chip-bg: rgba(0,0,0,.22);
+      --chip-stroke: rgba(255,255,255,.18);
+      --chip-blur: 14px;
+
+      --desc-bg: rgba(255,255,255,.14);
+      --desc-stroke: rgba(255,255,255,.22);
+      --desc-blur: 16px;
+
+      --title-bg: rgba(0,0,0,.50);
+      --title-stroke: rgba(255,255,255,.16);
+
+      --cta-bg: rgba(0,0,0,.70);
+      --cta-stroke: rgba(255,255,255,.10);
+
+      /* Switch button (stand out) */
+      --switch-bg: rgba(0,0,0,.78);
+      --switch-stroke: rgba(255,255,255,.28);
+      --switch-glow: 0 16px 44px rgba(0,0,0,.60);
+      --switch-blur: 16px;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100svh;
+      display:grid;
+      place-items:center;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--text);
+      overflow:hidden;
+
+      /* BACKGROUND stays the same (as you asked) */
+      background:
+        radial-gradient(900px 540px at 20% 12%, rgba(255,255,255,.18), transparent 60%),
+        radial-gradient(780px 520px at 86% 58%, rgba(255,180,255,.14), transparent 60%),
+        url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=2200&q=80");
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* ===== Screen (the UI container) ===== */
+    .screen{
+      width:min(390px, 92vw);
+      height:min(820px, 92vh);
+      padding: 18px;
+      border-radius: var(--r-outer);
+
+      background: var(--screen-bg);
+      border: 1px solid var(--screen-stroke);
+      box-shadow: var(--screen-shadow);
+
+      backdrop-filter: blur(var(--screen-blur)) saturate(var(--screen-sat));
+      -webkit-backdrop-filter: blur(var(--screen-blur)) saturate(var(--screen-sat));
+
+      position:relative;
+      transition:
+        background .35s ease,
+        border-color .35s ease,
+        box-shadow .35s ease,
+        backdrop-filter .35s ease;
+    }
+
+    /* ===== 3 MODES (ONLY affect .screen and inside) ===== */
+
+    /* 1) CLEAR GLASS (no blur, crisp) */
+    .screen.mode-clear{
+      --screen-bg: rgba(255,255,255,.10);
+      --screen-stroke: rgba(255,255,255,.22);
+      --screen-blur: 0px;
+      --screen-sat: 110%;
+      --screen-shadow: 0 20px 55px rgba(0,0,0,.38);
+
+      --tabs-bg: rgba(255,255,255,.12);
+      --tabs-stroke: rgba(255,255,255,.20);
+
+      --chip-bg: rgba(0,0,0,.18);
+      --chip-stroke: rgba(255,255,255,.16);
+      --chip-blur: 0px;
+
+      --desc-bg: rgba(255,255,255,.12);
+      --desc-stroke: rgba(255,255,255,.20);
+      --desc-blur: 0px;
+
+      --title-bg: rgba(0,0,0,.52);
+      --title-stroke: rgba(255,255,255,.16);
+
+      --switch-bg: rgba(0,0,0,.82);
+      --switch-stroke: rgba(255,255,255,.28);
+      --switch-blur: 10px;
+    }
+
+    /* 2) FROZEN GLASS (heavy frost) */
+    .screen.mode-frozen{
+      --screen-bg: rgba(255,255,255,.34);
+      --screen-stroke: rgba(255,255,255,.44);
+      --screen-blur: 28px;
+      --screen-sat: 180%;
+      --screen-shadow:
+        inset 0 0 46px rgba(255,255,255,.34),
+        0 22px 70px rgba(0,0,0,.45);
+
+      --tabs-bg: rgba(255,255,255,.26);
+      --tabs-stroke: rgba(255,255,255,.36);
+
+      --chip-bg: rgba(255,255,255,.16);
+      --chip-stroke: rgba(255,255,255,.34);
+      --chip-blur: 18px;
+
+      --desc-bg: rgba(255,255,255,.22);
+      --desc-stroke: rgba(255,255,255,.36);
+      --desc-blur: 22px;
+
+      --title-bg: rgba(0,0,0,.42);
+      --title-stroke: rgba(255,255,255,.20);
+
+      --switch-bg: rgba(12,20,34,.78);
+      --switch-stroke: rgba(255,255,255,.34);
+      --switch-blur: 18px;
+    }
+
+    /* 3) CLEAR + BLUR (light blur, modern) */
+    .screen.mode-blur{
+      --screen-bg: rgba(255,255,255,.14);
+      --screen-stroke: rgba(255,255,255,.28);
+      --screen-blur: 16px;
+      --screen-sat: 145%;
+      --screen-shadow: 0 22px 70px rgba(0,0,0,.45);
+
+      --tabs-bg: rgba(255,255,255,.14);
+      --tabs-stroke: rgba(255,255,255,.22);
+
+      --chip-bg: rgba(0,0,0,.22);
+      --chip-stroke: rgba(255,255,255,.18);
+      --chip-blur: 14px;
+
+      --desc-bg: rgba(255,255,255,.14);
+      --desc-stroke: rgba(255,255,255,.22);
+      --desc-blur: 16px;
+
+      --title-bg: rgba(0,0,0,.50);
+      --title-stroke: rgba(255,255,255,.16);
+
+      --switch-bg: rgba(0,0,0,.78);
+      --switch-stroke: rgba(255,255,255,.28);
+      --switch-blur: 16px;
+    }
+
+    /* Inner card */
+    .card{
+      height:100%;
+      border-radius: var(--r-inner);
+      overflow:hidden;
+      position:relative;
+    }
+
+    /* Standout switch (inside the screen) */
+    .switchBar{
+      position:absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+
+      display:flex;
+      align-items:center;
+      gap: 10px;
+
+      padding: 10px 12px;
+      border-radius: 999px;
+
+      background: var(--switch-bg);
+      border: 1px solid var(--switch-stroke);
+      box-shadow: var(--switch-glow), 0 0 0 6px rgba(255,255,255,.10);
+
+      backdrop-filter: blur(var(--switch-blur));
+      -webkit-backdrop-filter: blur(var(--switch-blur));
+    }
+
+    .switchBtn{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+
+      padding: 10px 14px;
+      border-radius: 999px;
+
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.18);
+
+      color: rgba(255,255,255,.95);
+      cursor:pointer;
+      user-select:none;
+
+      transition: transform .15s ease, background .15s ease;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+    .switchBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.14); }
+    .switchBtn:active{ transform: translateY(0px); }
+
+    .badge{
+      width: 26px; height: 26px;
+      border-radius: 10px;
+      display:grid; place-items:center;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.20);
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+    }
+    .badge svg{
+      width: 16px; height: 16px;
+      stroke: rgba(255,255,255,.95);
+      fill:none; stroke-width: 2.2;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .modeText{
+      display:flex;
+      flex-direction:column;
+      line-height:1.05;
+    }
+    .modeText .t1{ font-size: 12px; opacity:.85; }
+    .modeText .t2{ font-size: 13px; font-weight: 1000; }
+
+    /* Hero */
+    .hero{
+      height: 46%;
+      position:relative;
+      background-image:
+        linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.08) 55%, rgba(0,0,0,.35)),
+        url("https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=75");
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* Top icon buttons */
+    .topbar{
+      position:absolute;
+      inset: 18px 18px auto 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      z-index:3;
+    }
+    .icon-btn{
+      width:46px; height:46px;
+      border-radius: 999px;
+      display:grid; place-items:center;
+      background: rgba(0,0,0,.30);
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      cursor:pointer;
+      transition: transform .15s ease, background .15s ease;
+    }
+    .icon-btn:hover{ transform: translateY(-1px); background: rgba(0,0,0,.38); }
+    .icon{
+      width:20px; height:20px;
+      fill:none;
+      stroke: rgba(255,255,255,.92);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Title overlay */
+    .title-chip{
+      position:absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+
+      display:flex;
+      justify-content:space-between;
+      gap: 14px;
+
+      padding: 16px;
+      border-radius: 20px;
+
+      background: var(--title-bg);
+      border: 1px solid var(--title-stroke);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .place h1{
+      margin:0;
+      font-size: 34px;
+      line-height:1.00;
+      letter-spacing:.2px;
+    }
+    .meta{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-top:10px;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .meta svg{ width:18px; height:18px; stroke: var(--muted); fill:none; stroke-width:2; }
+
+    .price{
+      text-align:right;
+      min-width: 120px;
+      padding-left: 8px;
+    }
+    .price .label{
+      font-size: 16px;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .price .value{
+      font-size: 44px;
+      font-weight: 1000;
+      letter-spacing: .5px;
+    }
+    .price .value span{
+      font-size: 18px;
+      vertical-align: super;
+      opacity:.9;
+      margin-right:6px;
+    }
+
+    /* Body */
+    .body{
+      height: 54%;
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+
+      /* subtle tint like your screenshot */
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(120,220,220,.14));
+    }
+
+    /* Tabs */
+    .tabs{ display:flex; gap: 14px; align-items:center; }
+    .tab{
+      padding: 16px 26px;
+      border-radius: 999px;
+      border: 1px solid var(--tabs-stroke);
+      background: var(--tabs-bg);
+      color: rgba(255,255,255,.92);
+      font-weight: 1000;
+      font-size: 18px;
+      cursor:pointer;
+      transition: transform .15s ease, background .15s ease;
+    }
+    .tab:hover{ transform: translateY(-1px); }
+    .tab.active{
+      background: rgba(255,255,255,.22);
+      border-color: rgba(255,255,255,.34);
+    }
+
+    /* Chips (bigger like screenshot) */
+    .chips{
+      display:flex;
+      gap: 14px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top: 6px;
+    }
+    .chip{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+
+      padding: 16px 18px;
+      border-radius: 22px;
+
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-stroke);
+      backdrop-filter: blur(var(--chip-blur));
+      -webkit-backdrop-filter: blur(var(--chip-blur));
+
+      color: rgba(255,255,255,.90);
+      font-weight: 1000;
+      font-size: 18px;
+
+      min-width: 150px;
+      transition: background .35s ease, border-color .35s ease, backdrop-filter .35s ease;
+    }
+    .chip.small{ min-width: 130px; }
+    .chip .mini{
+      width: 46px; height: 46px;
+      display:grid; place-items:center;
+      border-radius: 16px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .chip svg{
+      width:22px; height:22px;
+      stroke: rgba(255,255,255,.92);
+      fill:none; stroke-width:2.2;
+      stroke-linecap:round; stroke-linejoin:round;
+    }
+
+    /* Description (bigger like screenshot) */
+    .desc{
+      padding: 18px;
+      border-radius: 22px;
+
+      background: var(--desc-bg);
+      border: 1px solid var(--desc-stroke);
+      backdrop-filter: blur(var(--desc-blur));
+      -webkit-backdrop-filter: blur(var(--desc-blur));
+
+      color: rgba(255,255,255,.82);
+      line-height: 1.55;
+      font-size: 18px;
+      font-weight: 700;
+
+      flex: 1;
+      overflow:auto;
+
+      transition: background .35s ease, border-color .35s ease, backdrop-filter .35s ease;
+    }
+
+    /* CTA */
+    .footer{ display:flex; align-items:center; gap: 12px; }
+    .book{
+      flex:1;
+      height: 74px;
+      border-radius: 20px;
+
+      border: 1px solid var(--cta-stroke);
+      background: var(--cta-bg);
+
+      color: rgba(255,255,255,.95);
+      font-weight: 1000;
+      font-size: 22px;
+      letter-spacing: .2px;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 12px;
+
+      cursor:pointer;
+      transition: transform .15s ease, background .15s ease;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .book:hover{ transform: translateY(-1px); background: rgba(0,0,0,.78); }
+    .book svg{
+      width:22px; height:22px;
+      stroke: rgba(255,255,255,.92);
+      fill:none; stroke-width:2.2;
+      stroke-linecap:round; stroke-linejoin:round;
+    }
+
+    /* Scrollbar */
+    .desc::-webkit-scrollbar{ width: 10px; }
+    .desc::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,.18);
+      border-radius: 99px;
+      border: 2px solid rgba(0,0,0,0);
+      background-clip: padding-box;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Background stays constant -->
+  <main id="screen" class="screen mode-blur">
+    <div class="switchBar">
+      <button id="switchBtn" class="switchBtn" type="button" aria-label="Switch glass mode">
+        <span class="badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3v2"/>
+            <path d="M12 19v2"/>
+            <path d="M4.2 6.2l1.4 1.4"/>
+            <path d="M18.4 17.4l1.4 1.4"/>
+            <path d="M3 12h2"/>
+            <path d="M19 12h2"/>
+            <path d="M6.2 19.8l1.4-1.4"/>
+            <path d="M17.4 5.6l1.4-1.4"/>
+            <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>
+          </svg>
+        </span>
+        <span class="modeText">
+          <span class="t1">Glass Mode</span>
+          <span class="t2" id="modeText">Clear + Blur</span>
+        </span>
+      </button>
+    </div>
+
+    <section class="card">
+      <div class="hero">
+        <div class="topbar">
+          <button class="icon-btn" aria-label="Back">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+
+          <button class="icon-btn" aria-label="Bookmark">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="title-chip">
+          <div class="place">
+            <h1>Andes<br/>Mountain</h1>
+            <div class="meta">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/>
+                <path d="M12 10.2a2.2 2.2 0 1 0 0-.1z"/>
+              </svg>
+              <span>South, America</span>
+            </div>
+          </div>
+
+          <div class="price">
+            <div class="label">Price</div>
+            <div class="value"><span>$</span>230</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="body">
+        <div class="tabs" role="tablist" aria-label="Sections">
+          <button class="tab active" role="tab" aria-selected="true">Overview</button>
+          <button class="tab" role="tab" aria-selected="false">Details</button>
+        </div>
+
+        <div class="chips">
+          <div class="chip">
+            <span class="mini" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 7v6l4 2"/>
+                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+              </svg>
+            </span>
+            <span>6 Hours</span>
+          </div>
+
+          <div class="chip">
+            <span class="mini" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M6 19a4 4 0 0 1 0-8 5 5 0 0 1 9.7-1.6A4 4 0 1 1 18 19H6z"/>
+              </svg>
+            </span>
+            <span>16°C</span>
+          </div>
+
+          <div class="chip small">
+            <span class="mini" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 17.3l-5.1 3 1.4-5.8-4.5-3.9 6-.5L12 4.6l2.2 5.5 6 .5-4.5 3.9 1.4 5.8-5.1-3z"/>
+              </svg>
+            </span>
+            <span>4.5</span>
+          </div>
+        </div>
+
+        <div class="desc">
+          This vast mountain range is renowned for its remarkable diversity in terms of topography
+          and climate. It features towering peaks, active volcanoes, and dramatic valleys—an unforgettable
+          destination for hikers and nature lovers.
+        </div>
+
+        <div class="footer">
+          <button class="book" type="button">
+            Book Now
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M22 2L11 13"/>
+              <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const screen = document.getElementById("screen");
+    const btn = document.getElementById("switchBtn");
+    const modeText = document.getElementById("modeText");
+
+    const modes = [
+      { cls: "mode-clear",  label: "Clear" },
+      { cls: "mode-frozen", label: "Frozen" },
+      { cls: "mode-blur",   label: "Clear + Blur" }
+    ];
+
+    let i = 2; // start at blur
+
+    btn.addEventListener("click", () => {
+      screen.classList.remove(modes[i].cls);
+      i = (i + 1) % modes.length;
+      screen.classList.add(modes[i].cls);
+      modeText.textContent = modes[i].label;
+    });
+  </script>
+</body>
+</html>
